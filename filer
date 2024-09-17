@@ -1,0 +1,9 @@
+# Load the trained model
+model.load_weights("my_trained_gpt2_model.h5")
+
+# Generate text
+prompt = "The quick brown fox jumps over the lazy dog."
+encoded_prompt = tokenizer.encode(prompt, return_tensors="tf")
+
+generated_text = model.generate(input_ids=encoded_prompt, max_length=50, num_beams=4)
+print(tokenizer.decode(generated_text[0], skip_special_tokens=True))
