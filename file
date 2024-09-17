@@ -1,0 +1,17 @@
+import tensorflow as tf
+from transformers import GPT2Tokenizer, TFGPT2Model
+
+# Load tokenizer and model
+tokenizer = GPT2Tokenizer.from_pretrained("gpt2")
+model = TFGPT2Model.from_pretrained("gpt2")
+
+# Prepare data
+input_ids = tokenizer.encode("Hello, how are you?", return_tensors="tf")
+attention_mask = tf.ones_like(input_ids)
+
+# Train the model
+optimizer = tf.keras.optimizers.Adam()
+loss = tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True)
+
+model.compile(optimizer=optimizer, loss=loss)
+model.fit(input_ids, attention_mask, epochs=10)
