@@ -1,0 +1,33 @@
+import tensorflow as tf
+from transformers import GPT2Tokenizer, TFGPT2Model
+
+# Load tokenizer and model
+tokenizer = GPT2Tokenizer.from_pretrained("gpt2")
+model = TFGPT2Model.from_pretrained("gpt2")
+
+# Create training data (replace with your actual dataset preparation)
+train_data = ...
+
+# Define hyperparameters
+learning_rate = 0.001  # Adjust as needed
+batch_size = 32  # Adjust as needed
+num_epochs = 10  # Adjust as needed
+
+# Create optimizer and loss function
+optimizer = tf.keras.optimizers.Adam(learning_rate=learning_rate)
+loss = tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True)
+
+# Training loop
+for epoch in range(num_epochs):
+  for batch in train_data:
+    with tf.GradientTape() as tape:
+      predictions = model(batch["input_ids"], attention_mask=batch["attention_mask"])
+      loss_value = loss(batch["labels"], predictions.logits)  # Use logits for loss calculation
+    gradients = tape.gradient(loss_value, model.trainable_variables)
+    optimizer.apply_gradients(zip(gradients, model.trainable_variables))
+
+  # Evaluate and monitor training progress (optional)
+  ...
+
+# Save the trained model
+model.save_weights("my_trained_gpt2_model.h5")
