@@ -1,0 +1,57 @@
+import tensorflow as tf
+from transformers import GPT2Tokenizer, TFGPT2Model
+
+# Load tokenizer and model
+tokenizer = GPT2Tokenizer.from_pretrained("gpt2")
+model = TFGPT2Model.from_pretrained("gpt2")
+
+# Create training data (replace with your actual dataset preparation)
+train_data = ...
+validation_data = ...
+
+# Define hyperparameters
+learning_rate = 0.001
+batch_size = 32
+num_epochs = 10
+patience = 5  # For early stopping
+
+# Create optimizer and loss function
+optimizer = tf.keras.optimizers.Adam(learning_rate=learning_rate)
+loss = tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True)
+
+# Training loop
+best_validation_loss = float('inf')
+for epoch in range(num_epochs):
+    train_loss = 0.0
+    validation_loss = 0.0
+
+    for batch in train_data:
+        with tf.GradientTape() as tape:
+            predictions = model(batch["input_ids"], attention_mask=batch["attention_mask"])
+            loss_value = loss(batch["labels"], predictions.logits)
+        gradients = tape.gradient(loss_value, model.trainable_variables)
+        optimizer.apply_gradients(zip(gradients, model.trainable_variables))
+        train_loss += loss_value
+
+    for batch in validation_data:
+        predictions = model(batch["input_ids"], attention_mask=batch["attention_mask"])
+        loss_value = loss(batch["labels"], predictions.logits)
+        validation_loss += loss_value
+
+    train_loss /= len(train_data)
+    validation_loss /= len(validation_data)
+
+    print(f"Epoch {epoch+1}: Train Loss={train_loss:.4f}, Validation Loss={validation_loss:.4f}")
+
+    # Early stopping
+    if validation_loss < best_validation_loss:
+        best_validation_loss = validation_loss
+        patience_counter = 0
+    else:
+        patience_counter += 1
+        if patience_counter >= patience:
+            print("Early stopping")
+            break
+
+# Save the trained model
+model.save_weights("my_trained_gpt2_model.h5")
